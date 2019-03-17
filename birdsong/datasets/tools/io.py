@@ -23,7 +23,6 @@ def get_signal(audio, sr, timestamps):
         warnings.warn('Avoided index error by truncating timestamps')
         return audio[indeces]
     
-
 def slice_spectrogram(spec, window, stride):
     # Here the window and stride are expected to be already expressed in spectrogram
     #time-axis units
