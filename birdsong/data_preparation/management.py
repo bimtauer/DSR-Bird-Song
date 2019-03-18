@@ -7,9 +7,15 @@ class DatabaseManager(object):
     for acquiring, inventorizing, manipulating and serving data """
     def __init__(self, storage_dir):
         self.storage_dir = storage_dir
-        pass
-
-
+        if not os.path.isdir(storage_dir):
+            print('Creating empty directory.')
+            os.mkdir(storage_dir)
+        else:
+            print('Directory already exists, performing inventory.')
+            self.inventory()    
+        #self.SignalSlicer = Slicer(self.storage_dir, type='signal')
+        #self.NoiseSlicer = Slicer(self.storage_dir, type='noise')
+    
     def resample_df(self, df, samples_per_class):
         """ Up- or downsample a dataframe by randomly picking a fixed number of 
         samples for each class """
@@ -27,5 +33,6 @@ class DatabaseManager(object):
     def SQL_lookup(self):
         pass
         
-    def prepare_noise(self, audio)
+    def prepare_noise(self, audio):
+        pass
     

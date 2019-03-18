@@ -92,6 +92,23 @@ def vector_to_timestamps(vec, audio, sr):
     # Get total duration of signal
     sum_signal = np.sum(timestamps[1] - timestamps[0])
     return json.dumps([tuple(i) for i in timestamps.T]), sum_signal
+    
+def signal_noise_separation(audio):
+    """ Directly returns signal and noise components for a selected raw audio
+    vector. Used for precomputing slices when storing timestamps is unnecessary. """
+    stft = normalized_stft(audio)
+    mask = median_mask(stft, 3)
+    morph = morphological_filter(mask)
+    vec = indicator_vector(morph)
+    ratio = audio.shape[0] // vec.shape[1] #Results in miniscule time dilation of ~0.001 seconds but is safe
+    vec_stretched = np.repeat(vec, ratio).astype(bool)
+
+    signal_indeces = np.where(vec_stretched)[0]
+    noise_indeces = np.where(~vec_stretched)[0]
+
+    signal = audio[signal_indeces]
+    noise = audio[noise_indeces]
+    return signal, noise
 
 def signal_timestamps(audio, sr):
     """ Takes audio and sample rate from a bird soundfile and returns the overall 
