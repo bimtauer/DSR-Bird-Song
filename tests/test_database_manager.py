@@ -8,6 +8,7 @@ import numpy as np
 @pytest.fixture(scope='session')
 def test_dir(tmpdir_factory):
     dir_ = tmpdir_factory.mktemp("storage")
+    shutil.copy('storage/db.sqlite', dir_.join('db.sqlite'))
     return dir_
 
 def test_slicing():
@@ -31,8 +32,13 @@ def test_inventory(test_dir):
 
 # Depends on previous test
 def test_df_creation(test_dir):
-    shutil.copy('storage/db.sqlite', test_dir.join('db.sqlite'))
     dbm = DatabaseManager(test_dir)
     df = dbm.get_df()
     assert df.path[0] == '7_0.pkl'
     assert df.label[0] == 'rhea_americana'
+
+def test_download_below_median(test_dir):
+    dbm = DatabaseManager(test_dir)
+    diff = dbm.download_below_median(max_classes = 2, max_recordings = 1)
+    print(diff)
+    

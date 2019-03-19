@@ -1,6 +1,9 @@
 import os
 
+
 def lookup_species_by_rec_id(c, rec_id):
+    """ For a cursor and a recording id, look up the foreground species for 
+    this recording and return label as 'genus_species' """
     c.execute("""
         SELECT r.taxonomy_id, t.genus, t.species FROM recordings as r 
         JOIN taxonomy as t ON r.taxonomy_id = t.id
@@ -10,11 +13,24 @@ def lookup_species_by_rec_id(c, rec_id):
     return fetch[1] + "_" + fetch[2]
 
 # Used to select german bird recordings to download
-query = '''SELECT r.id, r.file
-    FROM taxonomy AS t
-    JOIN recordings AS r ON t.id = r.taxonomy_id
-    WHERE t.german = 1.0 AND downloaded IS NULL'''
-    
+def lookup_recordings_to_download(c, label, nr_recordings):
+    """ For a cursor and label ('genus_species'), return 10 recordings
+    if bird is german and recordings have not been downloaded yet """
+    genus, species = label.split('_')
+    c.execute("""
+        SELECT r.id, r.file
+        FROM taxonomy AS t
+        JOIN recordings AS r ON t.id = r.taxonomy_id
+        WHERE t.german = 1.0 
+        AND r.downloaded IS NULL 
+        AND t.genus = ?
+        AND t.species = ?
+        LIMIT ? """, (genus, species, nr_recordings))
+    recordings = c.fetchall()
+    return list(map((lambda x: (x[0],'http:' + x[1])), recordings))
+
+
+
 # Used to select a step1 subset of recordings to download
 query = '''SELECT r.id, r.file
     FROM taxonomy AS t
