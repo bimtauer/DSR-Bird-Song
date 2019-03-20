@@ -9,11 +9,13 @@ import os
 import pickle
 import librosa
 import numpy as np
+import urllib
 from urllib.request import urlretrieve
 from multiprocessing.pool import ThreadPool
 from .utils.signal_extraction import signal_noise_separation
 from .utils.io import slice_audio
 from .utils.spectrograms import mel_s
+import random
 
 class Slicer:
     def __init__(self, output_dir, window=5000, stride=2500, type='signal'):
@@ -62,6 +64,8 @@ class Slicer:
         if self.type == 'noise':
             if len(noise) >= (self.window / 1000) * sr:
                 spec_slices = self._spec_slices(noise, sr)
+                if len(spec_slices) > 3:
+                    spec_slices = random.sample(spec_slices, 3)
             else:
                 print(f'Too little noise for {rec_id}')
                 return

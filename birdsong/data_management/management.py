@@ -151,7 +151,7 @@ class DatabaseManager(object):
         labels = balances.index.values
             
         recordings = []
-        for label in below_median[:max_classes]:
+        for label in labels:
             recordings_for_class = sql_selectors.lookup_recordings_for_noise(c, label, 1)
             recordings += recordings_for_class
         print(f'Selected {len(recordings)} recordings for noise slicing')

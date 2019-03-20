@@ -58,6 +58,7 @@ def lookup_recordings_for_noise(c, label, nr_recordings):
         WHERE t.german = 1.0 
         AND t.genus = ?
         AND t.species = ?
+        ORDER BY RANDOM()
         LIMIT ? """, (genus, species, nr_recordings))
     recordings = c.fetchall()
     return list(map((lambda x: (x[0],'http:' + x[1])), recordings))
