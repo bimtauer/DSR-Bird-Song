@@ -1,5 +1,5 @@
 import os
-
+import pandas as pd
 
 def lookup_species_by_rec_id(c, rec_id):
     """ For a cursor and a recording id, look up the foreground species for 
@@ -29,6 +29,38 @@ def lookup_recordings_to_download(c, label, nr_recordings):
     recordings = c.fetchall()
     return list(map((lambda x: (x[0],'http:' + x[1])), recordings))
 
+def lookup_downloaded_german_recordings(conn):
+    query = """ 
+        SELECT r.id, r.scraped_duration, (t.genus || '_' || t.species) AS label
+        FROM taxonomy AS t
+        JOIN recordings AS r ON t.id = r.taxonomy_id
+        WHERE t.german = 1.0 
+        AND r.downloaded = 1.0
+        AND r.scraped_duration IS NOT NULL """
+    return pd.read_sql(query, conn)
+
+def lookup_not_downloaded_german_recordings(conn):
+    query = """ 
+        SELECT r.id, r.scraped_duration, (t.genus || '_' || t.species) AS label
+        FROM taxonomy AS t
+        JOIN recordings AS r ON t.id = r.taxonomy_id
+        WHERE t.german = 1.0 
+        AND r.downloaded IS NULL 
+        AND r.scraped_duration IS NOT NULL """
+    return pd.read_sql(query, conn)
+
+def lookup_recordings_for_noise(c, label, nr_recordings):
+    genus, species = label.split('_')
+    c.execute("""
+        SELECT r.id, r.file
+        FROM taxonomy AS t
+        JOIN recordings AS r ON t.id = r.taxonomy_id
+        WHERE t.german = 1.0 
+        AND t.genus = ?
+        AND t.species = ?
+        LIMIT ? """, (genus, species, nr_recordings))
+    recordings = c.fetchall()
+    return list(map((lambda x: (x[0],'http:' + x[1])), recordings))
 
 
 # Used to select a step1 subset of recordings to download
@@ -46,9 +78,7 @@ query = ''' SELECT t.id AS species_id, r.xeno_canto_id, t.genus, t.species, r.id
     '''
 
 # Used to set files to 'downloaded' if in rec_id_list
-def set_downloaded():
-    file_list = os.listdir(STORAGE_DIR)
-    id_list = [x[:-4] for x in file_list]
+def set_downloaded(c, id_list):
     c.execute('UPDATE recordings SET downloaded = 1.0 WHERE id IN ' +
               str(tuple(id_list)))
 

@@ -11,9 +11,9 @@ import librosa
 import numpy as np
 from urllib.request import urlretrieve
 from multiprocessing.pool import ThreadPool
-from birdsong.data_preparation.audio_conversion.signal_extraction import signal_noise_separation
-from birdsong.datasets.tools.io import slice_audio
-from birdsong.datasets.tools.spectrograms import mel_s
+from .utils.signal_extraction import signal_noise_separation
+from .utils.io import slice_audio
+from .utils.spectrograms import mel_s
 
 class Slicer:
     def __init__(self, output_dir, window=5000, stride=2500, type='signal'):
